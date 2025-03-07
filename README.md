@@ -1,4 +1,4 @@
-#This is where I publish my shared YAML files. Thanks for visiting.
+# This is where I publish my shared YAML files. Thanks for visiting.
 
-#Resources:
+# Resources:
     - https://github.com/broglep/homeassistant-meshtastic
