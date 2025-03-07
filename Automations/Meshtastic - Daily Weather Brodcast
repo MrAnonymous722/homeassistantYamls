@@ -1,0 +1,51 @@
+alias: Meshtastic - Daily Weather Brodcast
+description: ""
+triggers:
+  - trigger: time
+    at: "07:00:00"
+conditions: []
+actions:
+  - action: nws.get_forecasts_extra
+    metadata: {}
+    data:
+      type: twice_daily
+    target:
+      entity_id: weather.ktul_daynight
+    response_variable: action_response
+  - action: weather.get_forecasts
+    metadata: {}
+    data:
+      type: hourly
+    target:
+      entity_id: weather.ktul_daynight
+    response_variable: current_response
+  - action: notify.send_message
+    metadata: {}
+    data:
+      message: >-
+        {% set daytime_data =
+        action_response["weather.ktul_daynight"]["forecast"][0] %} {% set
+        daytime_data_condition = daytime_data["short_description"] %} {% set
+        daytime_data_high = daytime_data["detailed_description"] |
+        regex_findall("(?<=[hH]igh near )\d{1,3}(?=[\,\.])") | first %}
+
+        {% set nighttime_data =
+        action_response["weather.ktul_daynight"]["forecast"][1] %} {% set
+        nighttime_data_condition = nighttime_data["short_description"] %} {% set
+        nighttime_data_low = nighttime_data["detailed_description"] |
+        regex_findall("(?<=[lL]ow around )\d{1,3}(?=[\,\.])") | first %}
+
+        {% set current_data =
+        current_response["weather.ktul_daynight"]["forecast"][0] %}
+
+        Daily weather broadcast for
+        {{state_attr('weather.ktul_daynight','friendly_name')}}:{{- '\n' -}}
+        Morning conditions: {{daytime_data_condition}}{{- '\n' -}} High temp:
+        {{daytime_data_high}}{{- '\n' -}} Evening conditions:
+        {{nighttime_data_condition}}{{- '\n' -}} Tonight's Low temp:
+        {{nighttime_data_low}}{{- '\n' -}} Current temp:
+        {{current_data["temperature"]}}{{- '\n' -}} Current conditions:
+        {{current_data["condition"]}}{{- '\n' -}}
+    target:
+      entity_id: notify.mesh_channel_longfast
+mode: single
